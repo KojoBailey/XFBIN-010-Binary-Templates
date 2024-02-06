@@ -1,0 +1,85 @@
+//------------------------------------------------
+//--- 010 Editor v13.0.2 Binary Template
+//
+//      File: PlayerColorParam.bin.xfbin
+//   Authors: HydraBladeZ & Kojo Bailey
+//   Version: 2.0.1
+//   Purpose: JoJo's Bizarre Adventure: All-Star Battle R
+//  ID Bytes: 4E 55 43 43 ("NUCC")
+//------------------------------------------------
+
+// !IMPORTANT: Look at Output for automatic size calculations.
+local int CharIDLength = 8; // Change accordingly. Default is 8 bytes.
+
+/*
+    Regarding costumes:
+        0 = Default
+        1 = Costume A
+        2 = Costume B
+        and so on...
+*/
+
+string GetCostumeChar(int Costume) {
+    local char buffer = 'A' + Costume - 1;
+    if (buffer < 65) {
+        return "Default";
+    }
+    return Str("Costume %s", buffer);
+}
+string GetTintChar(int& Tint) {
+    local char buffer = 'A' + Tint;
+    return Str(buffer);
+}
+
+typedef struct {
+    local string Title = GetChunkName(i);
+    local string Read = GetFilePath(i);
+    local string Comment = "Colour data for the Character Select's tint option.";
+    DefineRedundant();
+    
+    local int TintLog = 0;
+    local int CostumeSave;
+    local string CharSave;
+    
+    local uint64 Pos;
+    local int i;
+    for (i = 0; i < Count; i++) {
+        SwitchColors(i);
+    
+        struct {
+            // Get string from pointer.
+            FollowPointer(Pos);
+            string CharID <name = "string Character ID">; 
+            FSeek(Pos);
+                   
+            uint32 Costume <name = "uint32 Costume Index">;
+    
+            // Keeps track of the Tint (for display & not part of data).
+            if (i > 0) {
+                if (CostumeSave != Costume || CharSave != CharID) {
+                    TintLog = 0;
+                }
+            }
+            local int Tint = TintLog;
+            CostumeSave = Costume;
+            CharSave = CharID;
+            TintLog++;
+    
+            // Colour in Character Select.
+            struct {
+                uint32 R <name= "uint32 Red">;
+                uint32 G <name= "uint32 Green">;
+                uint32 B <name= "uint32 Blue">;
+            } RGB <read= Str("%d, %d, %d", R, G, B), name= "struct Red, Green, Blue">;
+        } Entry <read= Str("%s (%s, Tint %s)", CharIdToFullName(Str(CharID)), GetCostumeChar(Costume), GetTintChar(Tint))>;
+    }
+    
+    // Auto-calculate what the sizes should be set to.
+    local uint64 ExpectedDataSize = Count * (24 + CharIDLength) + 16;
+    Printf("Template executed successfully.\n\n");
+    Printf("Entry Count = %d\nData Size should = %d\nChunk Size should = %d",
+        Count,
+        ExpectedDataSize,
+        ExpectedDataSize + 4
+    );
+} TPlayerColorParam;

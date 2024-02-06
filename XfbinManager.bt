@@ -1,0 +1,164 @@
+//------------------------------------------------
+//--- 010 Editor v13.0.2 Binary Template
+//
+//      File: XfbinData.bt
+//   Authors: Kojo Bailey
+//  Git Repo: https://github.com/KojoBailey/ASBR-010-BTs
+//   Version: 1.0.0
+//   Purpose: Parsing binary data from CC2 XFBIN files for easy editing
+//  Category: CyberConnect2
+// File Mask: *.xfbin
+//  ID Bytes: 4E 55 43 43
+//   History: 
+//      1.0.0 [2024/02/04] Initial release.
+//
+//--- For more info, refer to README.md
+//--- Currently only supports ASBR! Possibly works for ASB and EoH (but unlikely)
+//------------------------------------------------
+
+#ifndef XFBINDATA
+#define XFBINDATA
+
+#include "All-Star Battle R/ASBR.h"
+
+int GoToChunk(int index) {
+    FSeek(68);
+    FSkip(ChunkTable.ChunkTypeSize);
+    FSkip(ChunkTable.FilePathSize);
+    FSkip(ChunkTable.ChunkNameSize);
+    FSeek( FTell() - 1 );
+    FSkip( 4 - ( FTell() % 4 ) );
+    FSkip(ChunkTable.ChunkMapSize);
+    FSkip(ChunkTable.ChunkMapIndicesCount * 4);
+    FSkip(ChunkTable.ExtraIndicesCount * 2 * 4);
+    FSkip(24);
+    
+    local int IncludeIncr2;
+    BigEndian();
+    for (IncludeIncr2 = 0; IncludeIncr2 < index; IncludeIncr2++) {
+        uint32 ChunkSize <hidden = true>;
+        FSkip(ChunkSize + 40);
+    }
+
+    return 0;
+}
+
+string RemoveVersionNumber(string text) {
+    local int size;
+    local int reg = RegExSearch(text, "\\d{3}", size); // returns -1 if no version number found
+    if (reg == -1) {
+        return text;
+    } else {
+        return Str("%sXXX%s", SubStr(text, 0, reg), SubStr(text, reg + 3, -1));
+    }
+}
+
+string GetChunkName(int index) {
+    return ChunkNames.ChunkName[index].Name;
+}
+
+string GetFilePath(int index) {
+    return FilePaths.FilePath[index].Name;
+}
+
+void SwitchColors(int i) {
+    // Switch between background colours.
+    i % 2 == 0 ? SetBackColor(cDkRed) : SetBackColor(cRed);
+}
+
+void FollowPointer(uint64& Pos) {
+    uint64 Pointer <hidden = true>;
+    Pos = FTell();
+    FSeek(Pos - 8 + Pointer);
+}
+
+void DefineRedundant() {
+    SetBackColor(cPurple);
+    BigEndian();
+    uint32 ChunkSize <name = "uint32 Chunk Size">; // DataSize + 4
+    
+    SetBackColor(cNone);
+    FSkip(8); // More irrelevant container data.
+    
+    SetBackColor(cPurple);
+    uint32 DataSize <name = "uint32 Data Size">;
+    LittleEndian();
+    SetBackColor(cLtBlue);
+    uint32 Version <name = "uint32 Read Version", comment = "Version of file's structure, NOT its content.">;
+    SetBackColor(cPurple);
+    uint32 Count <name = "uint32 Entry Count">;
+    SetBackColor(cLtBlue);
+    uint64 FirstPointer <hidden = true>;
+}
+
+typedef struct {
+    BigEndian();
+    SetBackColor(cPurple);
+    uint32 ChunkSize <name = "uint32 Chunk Size">;
+    FSkip(8);
+    SetBackColor(cDkBlue);
+    char Data[ChunkSize];
+} TUnknown;
+
+// START
+BigEndian();
+SetBackColor(0xD850F7);
+char Magic[4] <comment = "Should be \"NUCC\" for XFBIN files">;
+Assert(Magic == "NUCC", "Magic \"NUCC\" not found. File is either encrypted or not an XFBIN.");
+FSkip(24);
+
+SetBackColor(0xECD82A);
+BigEndian();
+struct {
+    uint32 ChunkTypeCount <hidden = false>;
+    uint32 ChunkTypeSize <hidden = false>;
+    uint32 FilePathCount <hidden = false>;
+    uint32 FilePathSize <hidden = false>;
+    uint32 ChunkNameCount <hidden = false, name = "uint32 Chunk Name Count", comment = "Some unnecessary/useless chunks are ignored in the parsing">;
+    uint32 ChunkNameSize <hidden = false>;
+    uint32 ChunkMapCount <hidden = false>;
+    uint32 ChunkMapSize <hidden = false>;
+    uint32 ChunkMapIndicesCount <hidden = false>; // Size is always count * 4
+    uint32 ExtraIndicesCount <hidden = false>; // Size is always count * 2 * 4
+} ChunkTable <name = "struct Chunk Data Table">;
+
+FSkip(ChunkTable.ChunkTypeSize + 1);
+struct {
+    SetBackColor(0x7C27D5);
+    local int IncludeIncr; // Avoiding conflicting definitions with convoluted name
+    local string IncludeNextString;
+    for (IncludeIncr = 0; IncludeIncr < ChunkTable.FilePathCount - 1; IncludeIncr++) {
+        IncludeNextString = ReadLine(FTell());
+        struct {
+            string Name;
+        } FilePath <read = Name, hidden = false>;
+    }
+} FilePaths <name = "struct File Paths">;
+FSkip(1);
+struct {
+    SetBackColor(0xBCAE97);
+    local int IncludeIncr;
+    local string IncludeNextString;
+    for (IncludeIncr = 0; IncludeIncr < ChunkTable.ChunkNameCount - 1; IncludeIncr++) {
+        IncludeNextString = ReadLine(FTell());
+        if (IncludeNextString == "Page0" || IncludeNextString == "index") {
+            FSkip(6);
+        } else {
+            struct {
+                string Name;
+            } ChunkName <read = Name, hidden = false>;
+        }
+    }
+} ChunkNames <name = "struct Chunk Names", read = Str("%d chunks parsed", IncludeIncr - 2)>;
+
+SetBackColor(cNone);
+
+struct {
+    local int i;
+    for (i = 0; i < ChunkTable.ChunkNameCount - 3; i++) {
+        GoToChunk(i);
+        GenerateStruct();
+    }
+} Chunks <name = "struct CHUNK DATA", open = true>;
+
+#endif
