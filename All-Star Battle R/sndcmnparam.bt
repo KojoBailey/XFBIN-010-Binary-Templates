@@ -1,12 +1,15 @@
 //------------------------------------------------
 //--- 010 Editor v13.0.2 Binary Template
 //
-//      File: sndcmnparam.xfbin
+//      File: sndcmnparam.bt
 //   Authors: Kojo Bailey
+//  Git Repo: https://github.com/KojoBailey/XFBIN-010-Binary-Templates
 //   Version: 1.1.0
-//   Purpose: JoJo's Bizarre Adventure: All-Star Battle R
-//  ID Bytes: 4E 55 43 43 ("NUCC")
-//  
+//   Purpose: To be used with XfbinManager.bt
+//   History:
+//      1.0.0 [04/02/2024] Initial release.
+//      1.1.0 [06/02/2024] Integrated with XfbinManager.bt.
+//
 //------------------------------------------------
 
 string GetChunkDataType(string Title) {
@@ -33,20 +36,20 @@ typedef struct {
     SetBackColor(cPurple);
     uint32 DataSize <name = "uint32 Data Size", comment = "Should be Chunk Size - 4">;
     LittleEndian();
-    uint16 EntryCount <name = "uint16 Entry Count">;
+    uint16 Count <name = "uint16 Entry Count">;
     
     local int i;
-    for (i = 0; i < EntryCount; i++ ) {
+    for (i = 0; i < Count; i++ ) {
         SwitchColors(i);
         struct {
             char ID[32];
         } IDs <name = "char ID", read = ID>;
     }
 
-    local uint64 ExpectedSize = EntryCount * 32 + 2;
+    local uint64 ExpectedSize = Count * 32 + 2;
     Printf("\n~~ %s ~~\n", Title);
     Printf("Entry Count = %d\nData Size should = %d\nChunk Size should = %d\n\n",
-        EntryCount,
+        Count,
         ExpectedSize,
         ExpectedSize + 4
     );
@@ -65,10 +68,10 @@ typedef struct {
     SetBackColor(cPurple);
     uint32 DataSize <name = "uint32 Data Size", comment = "Should be Chunk Size - 4">;
     LittleEndian();
-    uint16 EntryCount <name = "uint32 Entry Count">;
+    uint16 Count <name = "uint32 Entry Count">;
 
     local int i;
-    for (i = 0; i < EntryCount; i++) {
+    for (i = 0; i < Count; i++) {
         SwitchColors(i);
         struct {
             char CharID[32] <name = "char Character ID">;
@@ -87,10 +90,10 @@ typedef struct {
         } Entry <read = Str("%s - %s", CharID, CharIdToFullName(Str(CharID)))>;
     }
 
-    local uint64 ExpectedSize = EntryCount * 212 + 2;
+    local uint64 ExpectedSize = Count * 212 + 2;
     Printf("\n~~ %s ~~\n", Title);
     Printf("Entry Count = %d\nData Size should = %d\nChunk Size should = %d\n\n",
-        EntryCount,
+        Count,
         ExpectedSize,
         ExpectedSize + 4
     );
@@ -124,10 +127,10 @@ typedef struct {
     SetBackColor(cPurple);
     uint32 DataSize <name = "uint32 Data Size", comment = "Should be Chunk Size - 4">;
     LittleEndian();
-    uint16 EntryCount <name = "uint16 Entry Count">;
+    uint16 Count <name = "uint16 Entry Count">;
 
     local int i;
-    for (i = 0; i < EntryCount; i++) {
+    for (i = 0; i < Count; i++) {
         SwitchColors(i);
         struct {
             struct {
@@ -144,10 +147,10 @@ typedef struct {
     }
 
     // Display expected size data
-    local uint64 ExpectedSize = EntryCount * 178 + 2;
+    local uint64 ExpectedSize = Count * 178 + 2;
     Printf("\n~~ %s ~~\n", Title);
     Printf("Entry Count = %d\nData Size should = %d\nChunk Size should = %d\n\n",
-        EntryCount,
+        Count,
         ExpectedSize,
         ExpectedSize + 4
     );

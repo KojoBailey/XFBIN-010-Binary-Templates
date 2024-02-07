@@ -1,11 +1,17 @@
 //------------------------------------------------
 //--- 010 Editor v13.0.2 Binary Template
 //
-//      File: PlayerColorParam.bin.xfbin
+//      File: PlayerColorParam.bt
 //   Authors: HydraBladeZ & Kojo Bailey
-//   Version: 2.0.1
-//   Purpose: JoJo's Bizarre Adventure: All-Star Battle R
-//  ID Bytes: 4E 55 43 43 ("NUCC")
+//  Git Repo: https://github.com/KojoBailey/XFBIN-010-Binary-Templates
+//   Version: 2.1.0
+//   Purpose: To be used with XfbinManager.bt
+//   History:
+//      1.0.0 [2023] Initial release (HydraBladeZ).
+//      1.1.0 [2023] Updated for variable names (Kojo Bailey).
+//      2.0.0 [2023] Updated visually for reading ease.
+//      2.1.0 [06/02/2024] Integrated with XfbinManager.bt.
+//
 //------------------------------------------------
 
 // !IMPORTANT: Look at Output for automatic size calculations.
@@ -76,7 +82,7 @@ typedef struct {
     
     // Auto-calculate what the sizes should be set to.
     local uint64 ExpectedDataSize = Count * (24 + CharIDLength) + 16;
-    Printf("Template executed successfully.\n\n");
+    Printf("\n~~ %s ~~\n", Title);
     Printf("Entry Count = %d\nData Size should = %d\nChunk Size should = %d",
         Count,
         ExpectedDataSize,

@@ -1,16 +1,16 @@
 //------------------------------------------------
 //--- 010 Editor v13.0.2 Binary Template
 //
-//      File: PlayerColorParam.bin.xfbin
+//      File: MainModeParam.bt
 //   Authors: HydraBladeZ & Kojo Bailey
+//  Git Repo: https://github.com/KojoBailey/XFBIN-010-Binary-Templates
 //   Version: 2.1.0
-//   Purpose: JoJo's Bizarre Adventure: All-Star Battle R
-//  ID Bytes: 4E 55 43 43 ("NUCC")
+//   Purpose: To be used with XfbinManager.bt
 //   History:
 //      1.0.0 [2023] Initial release (HydraBladeZ).
 //      1.1.0 [2023] Updated for variable names (Kojo Bailey).
-//      2.0.0 [2023] Updated visually for reading ease (Kojo Bailey).
-//      2.1.0 [06/02/2024] Integrated with XfbinData.bt
+//      2.0.0 [2023] Updated visually for reading ease.
+//      2.1.0 [06/02/2024] Integrated with XfbinManager.bt.
 //
 //------------------------------------------------
 

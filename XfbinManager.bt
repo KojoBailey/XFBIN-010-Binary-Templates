@@ -3,23 +3,28 @@
 //
 //      File: XfbinData.bt
 //   Authors: Kojo Bailey
-//  Git Repo: https://github.com/KojoBailey/ASBR-010-BTs
+//  Git Repo: https://github.com/KojoBailey/XFBIN-010-Binary-Templates
 //   Version: 1.0.0
 //   Purpose: Parsing binary data from CC2 XFBIN files for easy editing
-//  Category: CyberConnect2
+//  Category: 
 // File Mask: *.xfbin
 //  ID Bytes: 4E 55 43 43
 //   History: 
 //      1.0.0 [2024/02/04] Initial release.
 //
 //--- For more info, refer to README.md
-//--- Currently only supports ASBR! Possibly works for ASB and EoH (but unlikely)
 //------------------------------------------------
 
 #ifndef XFBINDATA
 #define XFBINDATA
 
-#include "All-Star Battle R/ASBR.h"
+#include "All-Star Battle R/Character_IDs.h"
+
+// List of supported templates
+#include "All-Star Battle R/PlayerColorParam.bt"
+#include "All-Star Battle R/SpeakingLineParam.bt"
+#include "All-Star Battle R/MainModeParam.bt"
+#include "All-Star Battle R/sndcmnparam.bt"
 
 int GoToChunk(int index) {
     FSeek(68);
@@ -92,6 +97,8 @@ void DefineRedundant() {
 }
 
 typedef struct {
+    local string Read = GetFilePath(i);
+
     BigEndian();
     SetBackColor(cPurple);
     uint32 ChunkSize <name = "uint32 Chunk Size">;
@@ -105,7 +112,9 @@ BigEndian();
 SetBackColor(0xD850F7);
 char Magic[4] <comment = "Should be \"NUCC\" for XFBIN files">;
 Assert(Magic == "NUCC", "Magic \"NUCC\" not found. File is either encrypted or not an XFBIN.");
-FSkip(24);
+FSkip(22);
+LittleEndian();
+uint16 XfbinId <name = "uint16 XFBIN ID", comment = "Might be unique enough to differentiate between games.">;
 
 SetBackColor(0xECD82A);
 BigEndian();
@@ -160,5 +169,53 @@ struct {
         GenerateStruct();
     }
 } Chunks <name = "struct CHUNK DATA", open = true>;
+
+void GenerateStruct() {
+    local string VersionlessPath = RemoveVersionNumber(GetFilePath(i));
+    Printf(Str("> Generating struct from path %s...\n", VersionlessPath));
+
+    switch (XfbinId) {
+        case 0:
+            switch (VersionlessPath) {
+                case "PlayerColorParam.bin":
+                    struct TPlayerColorParam PlayerColorParam <name = Str("chunk %s", Title), open = true, read = Read, comment = Comment>;
+                    break;
+                case "SpeakingLineParam.bin":
+                    struct TAsbrSpeakingLineParam SpeakingLineParam <name =  Str("chunk %s", Title), open = true, read = Read, comment = Comment>;
+                    break;
+                // sndcmnparam
+                case "cmnparam/bin/XXX/cridata.bin":
+                    struct TCridata Cridata <name = Str("chunk %s", Title), read = Read, comment = Comment>;
+                    break;
+                case "cmnparam/bin/XXX/pldata.bin":
+                    struct TPldata Pldata <name = Str("chunk %s", Title), read = Read, comment = Comment>;
+                    break;
+                case "cmnparam/bin/XXX/battle.bin":
+                case "cmnparam/bin/XXX/commse0.bin":
+                case "cmnparam/bin/XXX/gimmick.bin":
+                case "cmnparam/bin/XXX/player.bin":
+                case "cmnparam/bin/XXX/sd01a_mob.bin":
+                case "cmnparam/bin/XXX/sd02a_mob.bin":
+                case "cmnparam/bin/XXX/sd03b_mob.bin":
+                case "cmnparam/bin/XXX/sd04a_mob.bin":
+                case "cmnparam/bin/XXX/sd04b_mob.bin":
+                case "cmnparam/bin/XXX/sd05a_mob.bin":
+                case "cmnparam/bin/XXX/sd06a_mob.bin":
+                case "cmnparam/bin/XXX/sd06b_mob.bin":
+                case "cmnparam/bin/XXX/sd07a_mob.bin":
+                case "cmnparam/bin/XXX/sd08a_mob.bin":
+                    struct TSndcmnparam Sndcmnparam <name = Str("chunk %s", Title), read = Read, comment = Comment>;
+                    break;
+                default:
+                    struct TUnknown Unknown <name = "chunk Unrecognised", read = Read, comment = "The file path for this data could not be recognised.">;
+            }
+            break;
+        case 718:
+            struct TMainModeParam MainModeParam <name = Str("chunk %s", Title), open = true, read = Read, comment = Comment>;
+            break;
+        default:
+            struct TUnknown Unknown <name = "chunk Unrecognised", read = Read, comment = "The file path for this data could not be recognised.">;
+    }
+}
 
 #endif

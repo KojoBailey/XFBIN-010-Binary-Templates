@@ -1,16 +1,3 @@
-//------------------------------------------------
-//--- 010 Editor v13.0.2 Binary Template
-//
-//      File: 
-//   Authors: 
-//   Version: 
-//   Purpose: 
-//  Category: 
-// File Mask: 
-//  ID Bytes: 
-//   History: 
-//------------------------------------------------
-
 #define ASBR_H
 
 #include "All-Star Battle R/Character_IDs.h"

@@ -1,11 +1,3 @@
-//------------------------------------------------
-//--- 010 Editor v13.0.2 Binary Template Header
-//
-//   Authors: Kojo Bailey
-//   Version: 1.0.1
-//   Purpose: Use with JoJo CyberConnect2 templates
-//------------------------------------------------
-
 string CharIdToShortName(string CharID) {
     switch (CharID) {
         case "0bao01":
